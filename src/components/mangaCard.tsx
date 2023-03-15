@@ -6,10 +6,15 @@ import CardMedia from "@mui/material/CardMedia";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import MangaApis from "../agent/api";
 import MangaList from "../models/mangaList";
+import appPaths from "../shared/paths";
+
+//coverArt: item.relationships.attributes.fileName,
 
 const T = () => {
+  const navigate = useNavigate();
   const [mangaList, setMangaList] = useState<MangaList[]>([]);
   const isRendered = useRef<boolean>(false);
 
@@ -17,18 +22,30 @@ const T = () => {
     if (!isRendered.current) {
       isRendered.current = true;
       MangaApis.getAllMangas().then((response) => {
-        console.log(response.data);
         response.data.forEach((item: any) => {
+          let name = "";
+          let author = "";
+          item.relationships.forEach((i: any) => {
+            if (i.type === "cover_art") {
+              name = i.attributes.fileName;
+            }
+
+            if (i.type === "author") {
+              author = i.attributes.name;
+            }
+          });
+
           setMangaList((prev) => [
             ...prev,
             {
               mangaId: item.id,
               title: item.attributes.title["en"],
-              description: "",
+              description: item.attributes.description["en"],
               year: item.attributes.year || 2023,
               status: item.attributes.status,
-              author: "",
+              author: author,
               version: item.attributes.version,
+              fileName: name,
             },
           ]);
         });
@@ -37,9 +54,13 @@ const T = () => {
   }, []);
 
   const getMangoDetails = (mangaId: string) => {
-    MangaApis.getMangaDetails(mangaId).then((response) => {
-      console.log("Details: ", response.data);
-    });
+    // MangaApis.getMangaDetails(mangaId).then((response) => {
+    //   //console.log("Details: ", response.data);
+    // });
+
+    //ToDo =>
+
+    navigate(`${appPaths.details}?${mangaId}`);
   };
 
   // subheader={`Year: ${item.year} | Ver: ${item.version} | Status: ${item.status}`}
@@ -55,11 +76,11 @@ const T = () => {
             item
             xs={2}
             key={item.mangaId}>
-            <Card sx={{ height: "100%" }}>
+            <Card sx={{ height: "100%", width: "80%" }}>
               <CardMedia
                 component='img'
-                height='80'
-                image=''
+                height={100}
+                image={`https://uploads.mangadex.org/covers/${item.mangaId}/${item.fileName}`}
                 alt=''
               />
               <CardContent>
@@ -69,12 +90,14 @@ const T = () => {
                 <Typography
                   sx={{
                     fontSize: 10,
-                  }}>{`Year: ${item.year} | Ver: ${
+                  }}>{`Author: ${item.author} | Year: ${item.year} | Ver: ${
                   item.version
                 } | Status: ${item.status.toUpperCase()}`}</Typography>
-                <Typography sx={{ fontSize: 8 }}>
-                  MANGA DESCRIPTION WILL BE RETRIVED HERE ...
-                </Typography>
+                <Typography sx={{ fontSize: 8 }}>{`${
+                  item.description
+                    ? item.description.substring(0, 100) + "..."
+                    : ""
+                }`}</Typography>
               </CardContent>
               <CardActions>
                 <Button

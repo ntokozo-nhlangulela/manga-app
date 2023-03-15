@@ -9,10 +9,14 @@ const requests = {
 
 const MangaApis = {
     //Get list of all mangas 
-    getAllMangas: () => requests.get('https://api.mangadex.org/manga/'),
+    getAllMangas: () => requests.get('https://api.mangadex.org/manga/?includes[]=author&includes[]=cover_art'),
 
     //Get Manga Chapters API -> need to use this on details screen 
-    getMangaDetails: (mangaId: string) => requests.get(`https://api.mangadex.org/manga/${mangaId}/feed`)
+    getMangaDetails: (mangaId: string) => requests.get(`https://api.mangadex.org/manga/${mangaId}/feed`),
+
+
+    //getMangaCover: () => requests.get('https://api.mangadex.org/manga/?includes[]=cover_art')
 }
+//https://uploads.mangadex.org/covers/5d45f791-69ec-4288-908c-2293afdee640/cbd388cd-6f47-4557-914d-ca1a0245ad52.jpg
 
 export default MangaApis;
