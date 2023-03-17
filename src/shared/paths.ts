@@ -1,5 +1,5 @@
 const appPaths = {
-    home: "/manga/viewAll",
+    home: "/",
     details: "/manga/details"
 }
 

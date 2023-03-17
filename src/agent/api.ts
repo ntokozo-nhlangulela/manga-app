@@ -5,6 +5,7 @@ const responseBody = <T>(response: AxiosResponse<T>) => response?.data;
 
 const requests = {
     get: <T>(url: string) => axios.get(url).then(responseBody)
+
 }
 
 const MangaApis = {
