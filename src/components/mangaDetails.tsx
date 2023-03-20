@@ -1,28 +1,33 @@
-import { Person } from "@mui/icons-material";
-import AutoModeRoundedIcon from "@mui/icons-material/AutoModeRounded";
-import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import FormatListBulletedRoundedIcon from "@mui/icons-material/FormatListBulletedRounded";
-import NumbersIcon from "@mui/icons-material/Numbers";
-import TitleIcon from "@mui/icons-material/Title";
-import { Typography } from "@mui/material";
+import { Button, Divider, Typography } from "@mui/material";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import Grid from "@mui/material/Grid";
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import MangaApis from "../agent/api";
 import MangaList from "../models/mangaList";
+import appPaths from "../shared/paths";
 
 interface mangaDetailsProps {
   mangaInformation: MangaList;
 }
 
+interface chapterDto {
+  title?: string;
+  chapterNo?: number;
+  volume?: number;
+  pages?: number;
+  chapterId?: string;
+}
+
 const MangaDetails = () => {
   //const { mangaInformation } = props;
+  const navigate = useNavigate();
   const isRendered = useRef<boolean>(false);
   const [mangaInformation, setMangaInformation] = useState<MangaList>();
-  const [chapterList, setChapterList] = useState<any[]>([]);
+  const [chapterList, setChapterList] = useState<chapterDto[]>([]);
   const mangaId: string = String(window.location.search.substring(1));
 
   //ToDo: Refactor this useEffect
@@ -33,7 +38,6 @@ const MangaDetails = () => {
         const matchingRecord = response.data.find(
           (item: any) => item.id === mangaId
         );
-
         let name = "";
         let author = "";
         matchingRecord.relationships.forEach((i: any) => {
@@ -55,16 +59,35 @@ const MangaDetails = () => {
           author: author,
           version: matchingRecord.attributes.version,
           fileName: name,
+          state: matchingRecord.attributes.state,
+          rating: matchingRecord.attributes.contentRating,
+        });
+      });
+
+      //Get list of chapters
+      MangaApis.getMangaDetails(mangaId).then((response) => {
+        console.log("Check information: ", response.data);
+        response.data.forEach((info: any) => {
+          const attr = info.attributes;
+          console.log("Attributes: ", attr);
+          setChapterList((prev) => [
+            ...prev,
+            {
+              chapterNo: Number(attr.chapter),
+              title: attr.title ?? `Chapter ${attr.chapter}`,
+              volume: attr.volume,
+              pages: Number(attr.pages),
+              chapterId: info.id,
+            },
+          ]);
         });
       });
     }
   }, []);
 
-  useEffect(() => {
-    MangaApis.getMangaDetails(mangaId).then((response) => {
-      console.log("Checking chapters: ", response.data);
-    });
-  }, [mangaId]);
+  const sortFunction = (a: chapterDto, b: chapterDto) => {
+    return a.chapterNo! - b.chapterNo!;
+  };
 
   return (
     <div style={{ padding: "30px 0px 30px 30px" }}>
@@ -85,101 +108,130 @@ const MangaDetails = () => {
                 xs={12}
                 container
                 item>
-                <Grid
-                  xs={1}
-                  item>
-                  <TitleIcon style={{ paddingTop: "30px" }} />
-                </Grid>
                 <Grid>
-                  <Typography style={{ paddingTop: "30px" }}>
-                    {`Title: ${mangaInformation.title}`}
+                  <Typography
+                    style={{ paddingTop: "30px", fontWeight: "bold" }}>
+                    Title
                   </Typography>
+                  <Button
+                    style={{ marginTop: "10px" }}
+                    size='small'
+                    variant='outlined'>
+                    {mangaInformation.title}
+                  </Button>
                 </Grid>
               </Grid>
-
               <Grid
                 xs={12}
                 item
                 container>
-                <Grid xs={1}>
-                  <Person style={{ paddingTop: "10px" }} />
+                <Grid xs={3}>
+                  <Grid>
+                    <Typography
+                      style={{ paddingTop: "15px", fontWeight: "bold" }}>
+                      Author
+                    </Typography>
+                    <Button
+                      style={{ marginTop: "10px" }}
+                      size='small'
+                      variant='outlined'>
+                      {mangaInformation.author}
+                    </Button>
+                  </Grid>
                 </Grid>
-                <Grid>
-                  <Typography
-                    style={{
-                      paddingTop: "10px",
-                    }}>
-                    {`Author: ${mangaInformation?.author}`}
-                  </Typography>
+                <Grid xs={3}>
+                  <Grid>
+                    <Typography
+                      style={{ paddingTop: "15px", fontWeight: "bold" }}>
+                      Status
+                    </Typography>
+                    <Button
+                      style={{ marginTop: "10px" }}
+                      size='small'
+                      variant='outlined'>
+                      {mangaInformation.status}
+                    </Button>
+                  </Grid>
+                </Grid>
+                <Grid xs={3}>
+                  <Grid>
+                    <Typography
+                      style={{ paddingTop: "15px", fontWeight: "bold" }}>
+                      Version
+                    </Typography>
+                    <Button
+                      style={{ marginTop: "10px" }}
+                      size='small'
+                      variant='outlined'>
+                      {mangaInformation.version}
+                    </Button>
+                  </Grid>
                 </Grid>
               </Grid>
-
-              {/* <Typography
-              style={{
-                paddingTop: "10px",
-              }}>{`Description: ${mangaInformation.description}`}</Typography> */}
-
               <Grid
                 xs={12}
                 item
                 container>
-                <Grid xs={1}>
-                  <NumbersIcon style={{ paddingTop: "10px" }} />
+                <Grid xs={3}>
+                  <Grid>
+                    <Typography
+                      style={{ paddingTop: "15px", fontWeight: "bold" }}>
+                      Chapters
+                    </Typography>
+                    <Button
+                      style={{ marginTop: "10px" }}
+                      size='small'
+                      variant='outlined'>
+                      6
+                    </Button>
+                  </Grid>
                 </Grid>
-                <Grid>
-                  <Typography
-                    style={{
-                      paddingTop: "10px",
-                    }}>
-                    {`Version: ${mangaInformation.version}`}
-                  </Typography>
+                <Grid xs={3}>
+                  <Grid>
+                    <Typography
+                      style={{ paddingTop: "15px", fontWeight: "bold" }}>
+                      Year
+                    </Typography>
+                    <Button
+                      style={{ marginTop: "10px" }}
+                      size='small'
+                      variant='outlined'>
+                      {mangaInformation.year}
+                    </Button>
+                  </Grid>
+                </Grid>
+                <Grid xs={3}>
+                  <Grid>
+                    <Typography
+                      style={{ paddingTop: "15px", fontWeight: "bold" }}>
+                      State
+                    </Typography>
+                    <Button
+                      style={{ marginTop: "10px" }}
+                      size='small'
+                      variant='outlined'>
+                      {mangaInformation?.state}
+                    </Button>
+                  </Grid>
                 </Grid>
               </Grid>
-
               <Grid
                 xs={12}
                 item
                 container>
-                <Grid xs={1}>
-                  <AutoModeRoundedIcon style={{ paddingTop: "10px" }} />
-                </Grid>
-                <Grid>
-                  <Typography
-                    style={{
-                      paddingTop: "10px",
-                    }}>{`Status: ${mangaInformation.status}`}</Typography>
-                </Grid>
-              </Grid>
-
-              <Grid
-                xs={12}
-                item
-                container>
-                <Grid xs={1}>
-                  <CalendarMonthRoundedIcon style={{ paddingTop: "10px" }} />
-                </Grid>
-                <Grid>
-                  <Typography
-                    style={{
-                      paddingTop: "10px",
-                    }}>{`Year: ${mangaInformation.year}`}</Typography>
-                </Grid>
-              </Grid>
-
-              <Grid
-                xs={12}
-                item
-                container>
-                <Grid xs={1}>
-                  <FormatListBulletedRoundedIcon
-                    style={{ paddingTop: "10px" }}
-                  />
-                </Grid>
-                <Grid>
-                  <Typography
-                    style={{
-                      paddingTop: "10px",
-                    }}>{`Chapters: 6`}</Typography>
+                <Grid xs={3}>
+                  <Grid>
+                    <Typography
+                      style={{ paddingTop: "15px", fontWeight: "bold" }}>
+                      Rating
+                    </Typography>
+                    <Button
+                      style={{ marginTop: "10px" }}
+                      size='small'
+                      variant='outlined'>
+                      {mangaInformation?.rating}
+                    </Button>
+                  </Grid>
                 </Grid>
               </Grid>
             </Grid>
@@ -201,13 +253,103 @@ const MangaDetails = () => {
                   expandIcon={<ExpandMoreIcon />}
                   aria-controls='panel1a-content'
                   id='panel1a-header'
-                  style={{ backgroundColor: "lightGrey" }}>
+                  style={{ backgroundColor: "lightgray" }}>
                   <Typography>Chapters</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Typography>
-                    <li></li>
-                  </Typography>
+                  {chapterList
+                    .filter((_, index) => index <= 7)
+                    .sort(sortFunction)
+                    .map((x) => {
+                      return (
+                        <>
+                          <Grid
+                            xs={12}
+                            container
+                            item
+                            style={{
+                              marginBottom: "15px",
+                              marginTop: "5px",
+                            }}>
+                            <Grid
+                              xs={12}
+                              container
+                              item>
+                              {/* <Grid>
+                                <TitleIcon fontSize='small' />
+                              </Grid> */}
+                              <Grid
+                                style={{
+                                  fontSize: "small",
+                                  paddingTop: "3px",
+                                }}>
+                                {`Title: ${x.title}`}
+                              </Grid>
+                            </Grid>
+
+                            <Grid
+                              xs={12}
+                              container
+                              item>
+                              <Grid
+                                style={{
+                                  fontSize: "small",
+                                  paddingTop: "3px",
+                                }}>
+                                {`Ch. no: ${x.chapterNo}`}
+                              </Grid>
+                            </Grid>
+
+                            <Grid
+                              xs={12}
+                              container
+                              item>
+                              <Grid
+                                style={{
+                                  fontSize: "small",
+                                  paddingTop: "3px",
+                                }}>
+                                {`Pages: ${x.pages}`}
+                              </Grid>
+                            </Grid>
+
+                            {/* <Grid
+                              xs={12}
+                              container
+                              item
+                              style={{ paddingTop: "5px" }}>
+                              <Button
+                                variant='outlined'
+                                size='small'
+                                startIcon={<ChatBubbleOutlineIcon />}>
+                                6
+                              </Button>
+                            </Grid> */}
+                          </Grid>
+
+                          <Grid
+                            alignSelf={"right"}
+                            justifyContent='flex-end'
+                            style={{
+                              paddingBottom: "5px",
+                            }}>
+                            <Button
+                              variant='contained'
+                              color='success'
+                              size='small'
+                              style={{ fontSize: 9 }}
+                              onClick={() => {
+                                navigate(
+                                  `${appPaths.viewManga}?${x.chapterId}`
+                                );
+                              }}>
+                              Read Chapter
+                            </Button>
+                          </Grid>
+                          <Divider light />
+                        </>
+                      );
+                    })}
                 </AccordionDetails>
               </Accordion>
             </Grid>

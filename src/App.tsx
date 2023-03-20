@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 import T from "./components/mangaCard";
 import MangaDetails from "./components/mangaDetails";
+import ViewManga from "./components/viewManga";
 import appPaths from "./shared/paths";
 
 function App() {
@@ -16,6 +17,10 @@ function App() {
         <Route
           path={appPaths.details}
           element={<MangaDetails />}
+        />
+        <Route
+          path={appPaths.viewManga}
+          element={<ViewManga />}
         />
       </Routes>
     </BrowserRouter>

@@ -18,6 +18,7 @@ const T = () => {
   const [mangaList, setMangaList] = useState<MangaList[]>([]);
   const isRendered = useRef<boolean>(false);
 
+  //ToDo: update depencency list
   useEffect(() => {
     if (!isRendered.current) {
       isRendered.current = true;
@@ -53,17 +54,7 @@ const T = () => {
     }
   }, []);
 
-  const getMangoDetails = (mangaId: string) => {
-    // MangaApis.getMangaDetails(mangaId).then((response) => {
-    //   //console.log("Details: ", response.data);
-    // });
-
-    //ToDo =>
-
-    navigate(`${appPaths.details}?${mangaId}`);
-  };
-
-  // subheader={`Year: ${item.year} | Ver: ${item.version} | Status: ${item.status}`}
+  //ToDo: create a seperate style page and move all css code to that page
   return (
     <div style={{ padding: "30px" }}>
       <Grid
@@ -103,7 +94,7 @@ const T = () => {
                 <Button
                   size='small'
                   onClick={() => {
-                    getMangoDetails(item.mangaId);
+                    navigate(`${appPaths.details}?${item.mangaId}`);
                   }}>
                   Learn More
                 </Button>

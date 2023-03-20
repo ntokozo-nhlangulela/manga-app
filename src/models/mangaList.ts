@@ -6,6 +6,8 @@ export default interface MangaList {
     status: string,
     author: string,
     version: number,
-    fileName: string
+    fileName: string,
+    rating?: string,
+    state?: string
 }
  //coverArt: string
