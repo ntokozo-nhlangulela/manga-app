@@ -26,8 +26,11 @@ const ViewManga = () => {
   const theme = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
 
+  const searchManga = async (query: any) => {
+    const temp = await fetch(``).then((res) => res.json());
+  };
+
   useEffect(() => {
-    //getImages
     if (!isRendered.current) {
       isRendered.current = true;
       MangaApis.viewManga(chapterId).then((response) => {
@@ -62,7 +65,7 @@ const ViewManga = () => {
   };
 
   return (
-    <div style={{ alignItems: "center" }}>
+    <div style={{ alignItems: "center", paddingBottom: "90px" }}>
       {mangaImages.length > 0 && (
         <Box sx={{ maxWidth: "70%", flexGrow: 1, alignContent: "center" }}>
           <Paper
@@ -70,14 +73,14 @@ const ViewManga = () => {
             elevation={0}
             sx={{
               display: "flex",
-              alignItems: "center",
-              height: 50,
+              alignContent: "center",
               pl: 2,
               bgcolor: "background.default",
             }}>
             <Typography>{mangaImages[activeStep].label}</Typography>
           </Paper>
           <AutoPlaySwipeableViews
+            style={{ paddingLeft: "350px" }}
             axis={theme.direction === "rtl" ? "x-reverse" : "x"}
             index={activeStep}
             onChangeIndex={handleStepChange}
@@ -105,6 +108,7 @@ const ViewManga = () => {
           <MobileStepper
             steps={maxSteps}
             position='static'
+            style={{ paddingLeft: "400px" }}
             activeStep={activeStep}
             nextButton={
               <Button

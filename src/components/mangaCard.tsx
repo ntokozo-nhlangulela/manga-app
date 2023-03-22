@@ -1,3 +1,5 @@
+import SearchIcon from "@mui/icons-material/Search";
+import { InputAdornment, TextField } from "@mui/material";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
@@ -11,14 +13,12 @@ import MangaApis from "../agent/api";
 import MangaList from "../models/mangaList";
 import appPaths from "../shared/paths";
 
-//coverArt: item.relationships.attributes.fileName,
-
 const T = () => {
   const navigate = useNavigate();
   const [mangaList, setMangaList] = useState<MangaList[]>([]);
+  const [searchMangas, setSearchedMangas] = useState<MangaList[]>([]);
   const isRendered = useRef<boolean>(false);
 
-  //ToDo: update depencency list
   useEffect(() => {
     if (!isRendered.current) {
       isRendered.current = true;
@@ -49,20 +49,62 @@ const T = () => {
               fileName: name,
             },
           ]);
+
+          setSearchedMangas((prev) => [
+            ...prev,
+            {
+              mangaId: item.id,
+              title: item.attributes.title["en"],
+              description: item.attributes.description["en"],
+              year: item.attributes.year || 2023,
+              status: item.attributes.status,
+              author: author,
+              version: item.attributes.version,
+              fileName: name,
+            },
+          ]);
         });
       });
     }
   }, []);
 
-  //ToDo: create a seperate style page and move all css code to that page
+  const searchManga = (search: string) => {
+    if (search !== "") {
+      setSearchedMangas(
+        mangaList.filter((item) =>
+          item.title.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+        )
+      );
+    } else {
+      setSearchedMangas(mangaList);
+    }
+  };
+
   return (
-    <div style={{ padding: "30px" }}>
+    <div style={{ padding: "70px" }}>
+      <TextField
+        id='standard-basic'
+        label='Search Manga (i.e. Title)'
+        variant='standard'
+        style={{ justifyContent: "flex-end", paddingBottom: "30px" }}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          searchManga(event.target.value as string);
+        }}
+        InputProps={{
+          style: { textAlign: "right" },
+          startAdornment: (
+            <InputAdornment position='start'>
+              <SearchIcon />
+            </InputAdornment>
+          ),
+        }}
+      />
       <Grid
         container
         spacing={1}
         xs={12}
         item>
-        {mangaList.map((item) => (
+        {searchMangas.map((item) => (
           <Grid
             item
             xs={2}

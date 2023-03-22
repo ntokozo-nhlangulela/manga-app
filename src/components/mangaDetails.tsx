@@ -1,5 +1,5 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Button, Divider, Typography } from "@mui/material";
+import { Button, Divider, Pagination, Stack, Typography } from "@mui/material";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -20,17 +20,25 @@ interface chapterDto {
   volume?: number;
   pages?: number;
   chapterId?: string;
+  pageNumber?: number;
+}
+
+interface test {
+  indexNumber: number;
+  pageNumber: number;
 }
 
 const MangaDetails = () => {
-  //const { mangaInformation } = props;
   const navigate = useNavigate();
   const isRendered = useRef<boolean>(false);
   const [mangaInformation, setMangaInformation] = useState<MangaList>();
   const [chapterList, setChapterList] = useState<chapterDto[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageCount, setPageCount] = useState<number>(0);
   const mangaId: string = String(window.location.search.substring(1));
+  let currentMaxRange: number = 9;
+  let pageNo: number = 1;
 
-  //ToDo: Refactor this useEffect
   useEffect(() => {
     if (!isRendered.current) {
       isRendered.current = true;
@@ -64,20 +72,28 @@ const MangaDetails = () => {
         });
       });
 
-      //Get list of chapters
       MangaApis.getMangaDetails(mangaId).then((response) => {
-        console.log("Check information: ", response.data);
-        response.data.forEach((info: any) => {
-          const attr = info.attributes;
-          console.log("Attributes: ", attr);
+        const noOfChapters: number = response.data.length;
+        const tempArray: chapterDto[] = response.data.map((item: any) => ({
+          chapterNo: Number(item.attributes.chapter),
+          title: item.attributes.title ?? `Chapter ${item.attributes.chapter}`,
+          volume: item.attributes.volume,
+          pages: Number(item.attributes.pages),
+          chapterId: item.id,
+        }));
+        const sortedChapterList = tempArray.sort(sortFunction);
+        setPageCount(noOfChapters > 10 ? Math.floor(noOfChapters / 10) : 1);
+
+        sortedChapterList.forEach((info: any, index: number) => {
           setChapterList((prev) => [
             ...prev,
             {
-              chapterNo: Number(attr.chapter),
-              title: attr.title ?? `Chapter ${attr.chapter}`,
-              volume: attr.volume,
-              pages: Number(attr.pages),
-              chapterId: info.id,
+              chapterNo: Number(info.chapterNo),
+              title: info.title || `Chapter ${info.chapterNo}`,
+              volume: info.volume,
+              pages: Number(info.pages),
+              chapterId: info.chapterId,
+              pageNumber: assignPageNumber(index),
             },
           ]);
         });
@@ -89,15 +105,27 @@ const MangaDetails = () => {
     return a.chapterNo! - b.chapterNo!;
   };
 
+  const assignPageNumber = (index: number): number => {
+    if (index <= currentMaxRange) {
+      return pageNo;
+    } else {
+      currentMaxRange = currentMaxRange + 10;
+      pageNo++;
+      return pageNo;
+    }
+  };
+
   return (
-    <div style={{ padding: "30px 0px 30px 30px" }}>
+    <div style={{ padding: "70px" }}>
       <Grid
         container
         xs={12}
         item>
         {mangaInformation && (
           <>
-            <Grid xs={3}>
+            <Grid
+              xs={3}
+              item>
               <img
                 src={`https://uploads.mangadex.org/covers/${mangaInformation.mangaId}/${mangaInformation.fileName}`}
                 alt='Girl in a jacket'
@@ -125,7 +153,9 @@ const MangaDetails = () => {
                 xs={12}
                 item
                 container>
-                <Grid xs={3}>
+                <Grid
+                  xs={3}
+                  item>
                   <Grid>
                     <Typography
                       style={{ paddingTop: "15px", fontWeight: "bold" }}>
@@ -139,7 +169,9 @@ const MangaDetails = () => {
                     </Button>
                   </Grid>
                 </Grid>
-                <Grid xs={3}>
+                <Grid
+                  xs={3}
+                  item>
                   <Grid>
                     <Typography
                       style={{ paddingTop: "15px", fontWeight: "bold" }}>
@@ -153,7 +185,9 @@ const MangaDetails = () => {
                     </Button>
                   </Grid>
                 </Grid>
-                <Grid xs={3}>
+                <Grid
+                  xs={3}
+                  item>
                   <Grid>
                     <Typography
                       style={{ paddingTop: "15px", fontWeight: "bold" }}>
@@ -172,7 +206,9 @@ const MangaDetails = () => {
                 xs={12}
                 item
                 container>
-                <Grid xs={3}>
+                <Grid
+                  xs={3}
+                  item>
                   <Grid>
                     <Typography
                       style={{ paddingTop: "15px", fontWeight: "bold" }}>
@@ -186,7 +222,9 @@ const MangaDetails = () => {
                     </Button>
                   </Grid>
                 </Grid>
-                <Grid xs={3}>
+                <Grid
+                  xs={3}
+                  item>
                   <Grid>
                     <Typography
                       style={{ paddingTop: "15px", fontWeight: "bold" }}>
@@ -200,7 +238,9 @@ const MangaDetails = () => {
                     </Button>
                   </Grid>
                 </Grid>
-                <Grid xs={3}>
+                <Grid
+                  xs={3}
+                  item>
                   <Grid>
                     <Typography
                       style={{ paddingTop: "15px", fontWeight: "bold" }}>
@@ -219,7 +259,9 @@ const MangaDetails = () => {
                 xs={12}
                 item
                 container>
-                <Grid xs={3}>
+                <Grid
+                  xs={3}
+                  item>
                   <Grid>
                     <Typography
                       style={{ paddingTop: "15px", fontWeight: "bold" }}>
@@ -258,8 +300,7 @@ const MangaDetails = () => {
                 </AccordionSummary>
                 <AccordionDetails>
                   {chapterList
-                    .filter((_, index) => index <= 7)
-                    .sort(sortFunction)
+                    .filter((item) => item.pageNumber === currentPage)
                     .map((x) => {
                       return (
                         <>
@@ -270,14 +311,12 @@ const MangaDetails = () => {
                             style={{
                               marginBottom: "15px",
                               marginTop: "5px",
-                            }}>
+                            }}
+                            key={x.chapterId}>
                             <Grid
                               xs={12}
                               container
                               item>
-                              {/* <Grid>
-                                <TitleIcon fontSize='small' />
-                              </Grid> */}
                               <Grid
                                 style={{
                                   fontSize: "small",
@@ -309,22 +348,22 @@ const MangaDetails = () => {
                                   fontSize: "small",
                                   paddingTop: "3px",
                                 }}>
-                                {`Pages: ${x.pages}`}
+                                {`Volume. no: ${x.volume}`}
                               </Grid>
                             </Grid>
 
-                            {/* <Grid
+                            <Grid
                               xs={12}
                               container
-                              item
-                              style={{ paddingTop: "5px" }}>
-                              <Button
-                                variant='outlined'
-                                size='small'
-                                startIcon={<ChatBubbleOutlineIcon />}>
-                                6
-                              </Button>
-                            </Grid> */}
+                              item>
+                              <Grid
+                                style={{
+                                  fontSize: "small",
+                                  paddingTop: "3px",
+                                }}>
+                                {`Pages: ${x.pages}`}
+                              </Grid>
+                            </Grid>
                           </Grid>
 
                           <Grid
@@ -350,6 +389,16 @@ const MangaDetails = () => {
                         </>
                       );
                     })}
+                  <Stack
+                    spacing={2}
+                    style={{ alignItems: "center", paddingTop: "25px" }}>
+                    <Pagination
+                      count={pageCount}
+                      onChange={(_, pageNo) => {
+                        setCurrentPage(pageNo);
+                      }}
+                    />
+                  </Stack>
                 </AccordionDetails>
               </Accordion>
             </Grid>

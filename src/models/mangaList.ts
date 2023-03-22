@@ -10,4 +10,3 @@ export default interface MangaList {
     rating?: string,
     state?: string
 }
- //coverArt: string

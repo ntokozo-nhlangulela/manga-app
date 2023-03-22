@@ -1,3 +1,4 @@
+import { AppBar, Toolbar, Typography } from "@mui/material";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 import T from "./components/mangaCard";
@@ -6,9 +7,17 @@ import ViewManga from "./components/viewManga";
 import appPaths from "./shared/paths";
 
 function App() {
-  //ToDo: Add react routing
   return (
     <BrowserRouter>
+      <AppBar position='fixed'>
+        <Toolbar>
+          <Typography
+            variant='h6'
+            component='div'>
+            Manga
+          </Typography>
+        </Toolbar>
+      </AppBar>
       <Routes>
         <Route
           path={appPaths.home}
