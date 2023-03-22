@@ -14,7 +14,7 @@ function App() {
           <Typography
             variant='h6'
             component='div'>
-            Manga
+            Manga Hub
           </Typography>
         </Toolbar>
       </AppBar>
